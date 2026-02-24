@@ -48,7 +48,7 @@ export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCr
     <div className="min-h-screen p-4 pb-12 max-w-2xl mx-auto">
       {/* Header */}
       <div className="pt-8 pb-6 text-center">
-        <div className="text-xs text-slate-500 mb-2 uppercase tracking-wider">Set {setNumber}</div>
+        <div className="text-xs text-slate-500 mb-2 uppercase tracking-wider">Practice Exam {setNumber}</div>
         <div className={`inline-flex items-center justify-center w-32 h-32 rounded-full border-8 mb-4 ${
           pass ? 'border-green-500 text-green-400' : 'border-red-500 text-red-400'
         }`}>
@@ -92,7 +92,7 @@ export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCr
           onClick={onRetakeSet}
           className="w-full py-3.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold transition-colors"
         >
-          Retry Set {setNumber}
+          Retry This Exam
         </button>
         {canCreateNext && (
           <button
@@ -100,7 +100,7 @@ export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCr
             disabled={creatingNext}
             className="w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold transition-colors disabled:opacity-50"
           >
-            {creatingNext ? 'Creating…' : 'Create Next Exam Set →'}
+            {creatingNext ? 'Starting…' : 'Start Next Exam →'}
           </button>
         )}
         <button

@@ -122,7 +122,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
 
         <div className="flex items-center gap-3">
           <span className="text-xs px-2 py-1 rounded-md bg-slate-700 text-orange-400 font-semibold">
-            Set {setNumber}
+            Practice Exam {setNumber}
           </span>
           <span className="text-slate-400 text-sm">
             <span className="text-white font-semibold">{current + 1}</span>
