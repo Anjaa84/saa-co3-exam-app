@@ -1,0 +1,27 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ExamSet {
+  id          String       @id @default(cuid())
+  setNumber   Int          @unique          // 1, 2, 3 ...
+  createdAt   DateTime
+  questionIds String       // JSON: [42, 7, 381, ...] — the 65 locked IDs
+  attempts    ExamResult[]
+}
+
+model ExamResult {
+  id        String   @id
+  date      DateTime
+  score     Int
+  total     Int
+  timeTaken Int
+  results   String   // JSON: full QuestionResult[]
+  examSetId String
+  examSet   ExamSet  @relation(fields: [examSetId], references: [id])
+}
