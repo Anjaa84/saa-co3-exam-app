@@ -50,6 +50,9 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
   const elapsedBeforeRef = useRef(saved ? TOTAL_SECONDS - (saved.timeLeft ?? TOTAL_SECONDS) : 0)
   const startTimeRef = useRef(Date.now())
   const submittedRef = useRef(false)
+  // Ref that always holds the latest answers — prevents stale closure in the timer
+  const answersRef = useRef(answers)
+  useEffect(() => { answersRef.current = answers }, [answers])
 
   // Persist session state to localStorage on every change
   useEffect(() => {
@@ -89,8 +92,10 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
 
     // Total time = time before this session + time spent in this session
     const timeTaken = elapsedBeforeRef.current + Math.round((Date.now() - startTimeRef.current) / 1000)
+    // Use ref to get current answers — avoids stale closure when called by the timer
+    const currentAnswers = answersRef.current
     const questionResults: QuestionResult[] = questions.map(q => {
-      const sel = answers[q.id] ?? []
+      const sel = currentAnswers[q.id] ?? []
       return {
         questionId: q.id,
         question: q.question,
@@ -112,12 +117,13 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
       total: questions.length,
       timeTaken,
       examSetId,
+      setNumber,
       questionResults,
     }
 
     saveResult(result).catch(console.error)
     onFinish(result)
-  }, [answers, questions, onFinish])
+  }, [questions, onFinish, setNumber])
 
   function toggleOption(optId: string) {
     const prev = answers[q.id] ?? []
