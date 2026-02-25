@@ -1,15 +1,36 @@
 import { useState } from 'react'
-import type { Screen, ExamResult, ActiveExam } from './types'
+import type { Screen, ExamResult, ActiveExam, Question } from './types'
 import HomeScreen from './screens/HomeScreen'
 import ExamScreen from './screens/ExamScreen'
 import ResultsScreen from './screens/ResultsScreen'
 import ReviewScreen from './screens/ReviewScreen'
 import HistoryScreen from './screens/HistoryScreen'
 import SettingsScreen from './screens/SettingsScreen'
+import rawQuestions from './data/questions.json'
+
+const allQuestions = rawQuestions as Question[]
+const validQuestions = allQuestions.filter(q => !q.needsReview)
+const qMap = new Map(validQuestions.map(q => [q.id, q]))
+
+function restoreSession(): { exam: ActiveExam; screen: Screen } | null {
+  try {
+    const raw = localStorage.getItem('exam_session')
+    if (!raw) return null
+    const s = JSON.parse(raw) as { examSetId: string; setNumber: number; questionIds: number[] }
+    const questions = (s.questionIds ?? []).map(id => qMap.get(id)).filter(Boolean) as Question[]
+    if (!questions.length) return null
+    return { exam: { questions, examSetId: s.examSetId, setNumber: s.setNumber }, screen: 'exam' }
+  } catch {
+    localStorage.removeItem('exam_session')
+    return null
+  }
+}
+
+const initial = restoreSession()
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home')
-  const [activeExam, setActiveExam] = useState<ActiveExam | null>(null)
+  const [screen, setScreen] = useState<Screen>(initial?.screen ?? 'home')
+  const [activeExam, setActiveExam] = useState<ActiveExam | null>(initial?.exam ?? null)
   const [lastResult, setLastResult] = useState<ExamResult | null>(null)
   const [reviewResult, setReviewResult] = useState<ExamResult | null>(null)
 

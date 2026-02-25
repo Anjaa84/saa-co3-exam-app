@@ -3,6 +3,28 @@ import type { Question, ExamResult, QuestionResult } from '../types'
 import { isCorrect, formatTime, saveResult } from '../utils'
 
 const TOTAL_SECONDS = 130 * 60 // 7800
+const STORAGE_KEY = 'exam_session'
+
+interface SavedSession {
+  examSetId: string
+  setNumber: number
+  questionIds: number[]
+  current: number
+  answers: Record<number, string[]>
+  flagged: number[]
+  timeLeft: number
+}
+
+function loadSession(examSetId: string): SavedSession | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    const s = JSON.parse(raw) as SavedSession
+    return s?.examSetId === examSetId ? s : null
+  } catch {
+    return null
+  }
+}
 
 interface Props {
   questions: Question[]
@@ -13,15 +35,34 @@ interface Props {
 }
 
 export default function ExamScreen({ questions, examSetId, setNumber, onFinish, onAbandon }: Props) {
-  const [current, setCurrent] = useState(0)
-  const [answers, setAnswers] = useState<Record<number, string[]>>({})
-  const [flagged, setFlagged] = useState<Set<number>>(new Set())
-  const [timeLeft, setTimeLeft] = useState(TOTAL_SECONDS)
+  // Restore from saved session if available
+  const savedRef = useRef(loadSession(examSetId))
+  const saved = savedRef.current
+
+  const [current, setCurrent] = useState(saved?.current ?? 0)
+  const [answers, setAnswers] = useState<Record<number, string[]>>(saved?.answers ?? {})
+  const [flagged, setFlagged] = useState<Set<number>>(new Set(saved?.flagged ?? []))
+  const [timeLeft, setTimeLeft] = useState(saved?.timeLeft ?? TOTAL_SECONDS)
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false)
   const [showAbandonConfirm, setShowAbandonConfirm] = useState(false)
   const [showNav, setShowNav] = useState(false)
+  // Track time elapsed before this session (for accurate timeTaken across reloads)
+  const elapsedBeforeRef = useRef(saved ? TOTAL_SECONDS - (saved.timeLeft ?? TOTAL_SECONDS) : 0)
   const startTimeRef = useRef(Date.now())
   const submittedRef = useRef(false)
+
+  // Persist session state to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      examSetId,
+      setNumber,
+      questionIds: questions.map(q => q.id),
+      current,
+      answers,
+      flagged: [...flagged],
+      timeLeft,
+    } satisfies SavedSession))
+  }, [examSetId, setNumber, questions, current, answers, flagged, timeLeft])
 
   const q = questions[current]
   const selected = answers[q.id] ?? []
@@ -44,8 +85,10 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
   const handleSubmit = useCallback(() => {
     if (submittedRef.current) return
     submittedRef.current = true
+    localStorage.removeItem(STORAGE_KEY)
 
-    const timeTaken = Math.round((Date.now() - startTimeRef.current) / 1000)
+    // Total time = time before this session + time spent in this session
+    const timeTaken = elapsedBeforeRef.current + Math.round((Date.now() - startTimeRef.current) / 1000)
     const questionResults: QuestionResult[] = questions.map(q => {
       const sel = answers[q.id] ?? []
       return {
@@ -346,7 +389,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
             <button onClick={() => setShowAbandonConfirm(false)} className="flex-1 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:text-white text-sm transition-colors">
               Stay
             </button>
-            <button onClick={onAbandon} className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-400 text-white font-semibold text-sm transition-colors">
+            <button onClick={() => { localStorage.removeItem(STORAGE_KEY); onAbandon() }} className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-400 text-white font-semibold text-sm transition-colors">
               Exit
             </button>
           </div>
