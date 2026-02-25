@@ -171,7 +171,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
         </div>
 
         {/* Question text */}
-        <p className="text-slate-100 text-base leading-relaxed mb-6 whitespace-pre-wrap">
+        <p className="text-slate-100 text-base leading-relaxed mb-6">
           {q.question}
         </p>
 

@@ -106,7 +106,7 @@ function QuestionReview({ r, index, expanded, onToggle }: {
       {expanded && (
         <div className="border-t border-slate-700 p-4 space-y-2">
           {/* Full question text */}
-          <p className="text-sm text-slate-200 leading-relaxed mb-4 whitespace-pre-wrap">{r.question}</p>
+          <p className="text-sm text-slate-200 leading-relaxed mb-4">{r.question}</p>
 
           {/* Options */}
           {r.options.map(opt => {
