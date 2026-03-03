@@ -198,9 +198,6 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
         {/* Topic badge + flag */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-1 rounded-md bg-slate-700 text-slate-300">
-              {q.subtopic}
-            </span>
             {q.type === 'multiple' && (
               <span className="text-xs px-2 py-1 rounded-md bg-blue-500/20 text-blue-400 border border-blue-500/30">
                 Choose {q.numCorrect}
