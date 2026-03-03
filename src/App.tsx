@@ -74,7 +74,6 @@ export default function App() {
           onRetakeSet={() => {
             if (activeExam) startExam(activeExam)
           }}
-          onCreateNext={(exam) => startExam(exam)}
           onHome={() => setScreen('home')}
         />
       )}

@@ -1,32 +1,26 @@
 import express from 'express'
 import cors from 'cors'
 import { PrismaClient } from '@prisma/client'
+import fs from 'fs'
+import path from 'path'
 
 const app = express()
 const prisma = new PrismaClient()
 const PORT = 3003
 const EXAM_SIZE = 65
-const TOTAL_VALID_QUESTIONS = 625 // questions where needsReview=false
+const NUM_SETS = 10
 
 app.use(cors())
 app.use(express.json())
 
 // ── GET /api/pool-status ─────────────────────────────────────────────────────
-// Returns how many questions have been assigned to exam sets so far.
 app.get('/api/pool-status', async (_req, res) => {
+  const total = loadAllQuestionIds().length
   const sets = await prisma.examSet.findMany({ select: { questionIds: true } })
   const usedIds = new Set(sets.flatMap(s => JSON.parse(s.questionIds) as number[]))
   const used = usedIds.size
-  const remaining = TOTAL_VALID_QUESTIONS - used
-  const setsRemaining = Math.floor(remaining / EXAM_SIZE)
-
-  res.json({
-    used,
-    total: TOTAL_VALID_QUESTIONS,
-    remaining,
-    setsRemaining,
-    canCreate: remaining >= EXAM_SIZE,
-  })
+  const remaining = total - used
+  res.json({ used, total, remaining, setsRemaining: Math.floor(remaining / EXAM_SIZE), canCreate: remaining >= EXAM_SIZE })
 })
 
 // ── GET /api/exam-sets ───────────────────────────────────────────────────────
@@ -129,22 +123,37 @@ app.post('/api/exam-sets', async (req, res) => {
   res.status(201).json({ id: created.id, setNumber: created.setNumber, questionIds: picked })
 })
 
+// ── POST /api/seed-exams ─────────────────────────────────────────────────────
+// Creates NUM_SETS pre-made exam sets. Fails if any sets already exist.
+app.post('/api/seed-exams', async (_req, res) => {
+  const existing = await prisma.examSet.count()
+  if (existing > 0) {
+    res.status(409).json({ error: `Already have ${existing} exam sets. Reset first.` })
+    return
+  }
+  const created = await seedExamSets()
+  res.status(201).json({ created })
+})
+
 // ── POST /api/pool-reset ─────────────────────────────────────────────────────
-// Deletes all ExamSets (and cascades to their results) so the question pool
-// is considered fully unused again. This is the nuclear option in Settings.
+// Deletes all sets and results, then reseeds NUM_SETS fresh exam sets.
 app.post('/api/pool-reset', async (_req, res) => {
   await prisma.examResult.deleteMany()
   await prisma.examSet.deleteMany()
-  res.json({ ok: true })
+  const created = await seedExamSets()
+  res.json({ ok: true, created })
 })
 
 // ── GET /api/results ─────────────────────────────────────────────────────────
 app.get('/api/results', async (_req, res) => {
   const rows = await prisma.examResult.findMany({
     orderBy: { date: 'desc' },
-    select: { id: true, date: true, score: true, total: true, timeTaken: true, examSetId: true },
+    select: {
+      id: true, date: true, score: true, total: true, timeTaken: true, examSetId: true,
+      examSet: { select: { setNumber: true } },
+    },
   })
-  res.json(rows)
+  res.json(rows.map(r => ({ ...r, setNumber: r.examSet.setNumber, examSet: undefined })))
 })
 
 // ── GET /api/results/:id ─────────────────────────────────────────────────────
@@ -209,6 +218,24 @@ function shuffleArray<T>(arr: T[]): T[] {
     ;[copy[i], copy[j]] = [copy[j], copy[i]]
   }
   return copy
+}
+
+function loadAllQuestionIds(): number[] {
+  const filePath = path.join(process.cwd(), 'questions.json')
+  const data = JSON.parse(fs.readFileSync(filePath, 'utf8')) as { id: number }[]
+  return data.map(q => q.id)
+}
+
+async function seedExamSets(): Promise<number> {
+  const allIds = loadAllQuestionIds()
+  const shuffled = shuffleArray(allIds)
+  for (let i = 0; i < NUM_SETS; i++) {
+    const picked = shuffled.slice(i * EXAM_SIZE, (i + 1) * EXAM_SIZE)
+    await prisma.examSet.create({
+      data: { setNumber: i + 1, createdAt: new Date(), questionIds: JSON.stringify(picked) },
+    })
+  }
+  return NUM_SETS
 }
 
 app.listen(PORT, () => console.log(`API server → http://localhost:${PORT}`))

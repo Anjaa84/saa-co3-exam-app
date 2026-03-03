@@ -88,8 +88,12 @@ export function createExamSet(allValidIds: number[]): Promise<{ id: string; setN
   })
 }
 
-export function resetPool(): Promise<{ ok: boolean }> {
+export function resetPool(): Promise<{ ok: boolean; created: number }> {
   return apiFetch('/api/pool-reset', { method: 'POST' })
+}
+
+export function seedExams(): Promise<{ created: number }> {
+  return apiFetch('/api/seed-exams', { method: 'POST' })
 }
 
 // Results ---------------------------------------------------------------------
@@ -115,6 +119,7 @@ export function loadResults(): Promise<ExamResult[]> {
     rows.map(r => ({ ...r, questionResults: [] }))
   )
 }
+
 
 export function loadResult(id: string): Promise<ExamResult> {
   return apiFetch<{ id: string; date: string; score: number; total: number; timeTaken: number; examSetId: string; setNumber: number; results: QuestionResult[] }>(`/api/results/${id}`)

@@ -141,7 +141,9 @@ export default function HistoryScreen({ onBack, onReview }: Props) {
               <div key={r.id} className="bg-slate-800 rounded-xl border border-slate-700 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <div className="text-sm font-semibold text-white">Attempt #{history.length - idx}</div>
+                    <div className="text-sm font-semibold text-white">
+                      {r.setNumber != null ? `Practice Exam ${r.setNumber}` : 'Practice Exam'}
+                    </div>
                     <div className="text-xs text-slate-500">{formatDate(r.date)}</div>
                   </div>
                   <div className="flex items-center gap-2">

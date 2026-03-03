@@ -1,22 +1,14 @@
-import { useState, useEffect } from 'react'
-import type { ExamResult, ActiveExam } from '../types'
-import { getStudySuggestions, formatTime, getPoolStatus, createExamSet } from '../utils'
-import rawQuestions from '../data/questions.json'
-import type { Question } from '../types'
-
-const allQuestions = rawQuestions as Question[]
-const validQuestions = allQuestions.filter(q => !q.needsReview)
-const validIds = validQuestions.map(q => q.id)
+import type { ExamResult } from '../types'
+import { getStudySuggestions, formatTime } from '../utils'
 
 interface Props {
   result: ExamResult
   onReviewWrong: () => void
   onRetakeSet: () => void
-  onCreateNext: (exam: ActiveExam) => void
   onHome: () => void
 }
 
-export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCreateNext, onHome }: Props) {
+export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onHome }: Props) {
   const { score, total, timeTaken, questionResults } = result
   const pct = Math.round((score / total) * 100)
   const pass = pct >= 72
@@ -24,25 +16,6 @@ export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCr
   const skipped = questionResults.filter(r => r.selectedAnswers.length === 0).length
   const suggestions = getStudySuggestions(questionResults)
   const setNumber = result.setNumber ?? '?'
-
-  const [canCreateNext, setCanCreateNext] = useState(false)
-  const [creatingNext, setCreatingNext] = useState(false)
-
-  useEffect(() => {
-    getPoolStatus().then(p => setCanCreateNext(p.canCreate)).catch(() => {})
-  }, [])
-
-  async function handleCreateNext() {
-    setCreatingNext(true)
-    try {
-      const created = await createExamSet(validIds)
-      const qMap = new Map(validQuestions.map(q => [q.id, q]))
-      const questions = (created.questionIds as number[]).map(id => qMap.get(id)!)
-      onCreateNext({ questions, examSetId: created.id, setNumber: created.setNumber })
-    } catch {
-      setCreatingNext(false)
-    }
-  }
 
   return (
     <div className="min-h-screen p-4 pb-12 max-w-2xl mx-auto">
@@ -94,20 +67,11 @@ export default function ResultsScreen({ result, onReviewWrong, onRetakeSet, onCr
         >
           Retry This Exam
         </button>
-        {canCreateNext && (
-          <button
-            onClick={handleCreateNext}
-            disabled={creatingNext}
-            className="w-full py-3.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white font-semibold transition-colors disabled:opacity-50"
-          >
-            {creatingNext ? 'Starting…' : 'Start Next Exam →'}
-          </button>
-        )}
         <button
           onClick={onHome}
           className="w-full py-3 rounded-xl border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white transition-colors"
         >
-          Home
+          All Practice Exams
         </button>
       </div>
 
