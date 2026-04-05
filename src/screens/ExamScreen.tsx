@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import type { Question, ExamResult, QuestionResult } from '../types'
-import { isCorrect, formatTime, saveResult } from '../utils'
+import { isCorrect, formatTime, saveResult, getSettings } from '../utils'
 
 const TOTAL_SECONDS = 130 * 60 // 7800
 const STORAGE_KEY = 'exam_session'
@@ -54,6 +54,11 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
   const answersRef = useRef(answers)
   useEffect(() => { answersRef.current = answers }, [answers])
 
+  const allowPauseTimer = useRef(getSettings().allowPauseTimer).current
+  const [isPaused, setIsPaused] = useState(false)
+  const isPausedRef = useRef(false)
+  useEffect(() => { isPausedRef.current = isPaused }, [isPaused])
+
   // Persist session state to localStorage on every change
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
@@ -73,6 +78,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
   // Countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
+      if (isPausedRef.current) return
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearInterval(interval)
@@ -180,10 +186,30 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
           <span className="text-slate-500 text-xs">{answeredCount} answered</span>
         </div>
 
-        <div className={`font-mono font-bold text-lg tabular-nums ${isTimeUrgent ? 'text-red-400 animate-pulse' : isTimeLow ? 'text-yellow-400' : 'text-white'}`}>
-          {formatTime(timeLeft)}
+        <div className="flex items-center gap-2">
+          {allowPauseTimer && (
+            <button
+              onClick={() => setIsPaused(p => !p)}
+              className="px-2.5 py-1 rounded-md bg-slate-700 text-slate-300 hover:text-white text-xs transition-colors"
+            >
+              {isPaused ? '▶ Resume' : '⏸ Pause'}
+            </button>
+          )}
+          <span className={`font-mono font-bold text-lg tabular-nums ${isPaused ? 'text-slate-500' : isTimeUrgent ? 'text-red-400 animate-pulse' : isTimeLow ? 'text-yellow-400' : 'text-white'}`}>
+            {formatTime(timeLeft)}
+          </span>
         </div>
       </header>
+
+      {/* ── Paused banner ── */}
+      {isPaused && (
+        <div className="bg-slate-700/80 border-b border-slate-600 px-4 py-2 text-center">
+          <span className="text-sm text-slate-300">Timer paused — </span>
+          <button onClick={() => setIsPaused(false)} className="text-sm text-orange-400 hover:text-orange-300 font-medium transition-colors">
+            Resume
+          </button>
+        </div>
+      )}
 
       {/* ── Progress bar ── */}
       <div className="h-1 bg-slate-700">

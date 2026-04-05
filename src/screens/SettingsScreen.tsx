@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { resetPool } from '../utils'
+import { resetPool, getSettings, saveSettings } from '../utils'
 
 interface Props {
   onBack: () => void
@@ -9,6 +9,13 @@ export default function SettingsScreen({ onBack }: Props) {
   const [showConfirm, setShowConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
   const [done, setDone] = useState(false)
+  const [settings, setSettings] = useState(getSettings)
+
+  function toggleSetting<K extends keyof typeof settings>(key: K) {
+    const next = { ...settings, [key]: !settings[key] }
+    setSettings(next)
+    saveSettings(next)
+  }
 
   async function handleReset() {
     setResetting(true)
@@ -28,6 +35,31 @@ export default function SettingsScreen({ onBack }: Props) {
           ←
         </button>
         <h1 className="text-xl font-bold text-white">Settings</h1>
+      </div>
+
+      {/* Exam settings */}
+      <div className="border border-slate-700 rounded-xl p-4 mb-6">
+        <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">Exam</h2>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-white font-medium">Allow pause timer</p>
+            <p className="text-xs text-slate-400 mt-0.5">Shows a pause button during exams so you can freeze the countdown.</p>
+          </div>
+          <button
+            onClick={() => toggleSetting('allowPauseTimer')}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 focus:outline-none ${
+              settings.allowPauseTimer ? 'bg-orange-500' : 'bg-slate-600'
+            }`}
+            role="switch"
+            aria-checked={settings.allowPauseTimer}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition duration-200 ${
+                settings.allowPauseTimer ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
       </div>
 
       {/* Danger zone */}

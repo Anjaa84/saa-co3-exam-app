@@ -52,6 +52,30 @@ export function getStudySuggestions(results: QuestionResult[]): StudySuggestion[
     .sort((a, b) => b.errorRate - a.errorRate || b.wrongCount - a.wrongCount)
 }
 
+// ── App settings ─────────────────────────────────────────────────────────────
+
+const SETTINGS_KEY = 'app_settings'
+
+export interface AppSettings {
+  allowPauseTimer: boolean
+}
+
+const DEFAULT_SETTINGS: AppSettings = { allowPauseTimer: true }
+
+export function getSettings(): AppSettings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    if (!raw) return { ...DEFAULT_SETTINGS }
+    return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<AppSettings>) }
+  } catch {
+    return { ...DEFAULT_SETTINGS }
+  }
+}
+
+export function saveSettings(s: AppSettings): void {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s))
+}
+
 // ── API helpers ───────────────────────────────────────────────────────────────
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
