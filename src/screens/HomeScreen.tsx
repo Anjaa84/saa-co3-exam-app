@@ -119,7 +119,7 @@ export default function HomeScreen({ onStartExam, onViewHistory, onSettings }: P
                     <button
                       onClick={() => handleStart(s.id)}
                       disabled={isStarting}
-                      className="flex-shrink-0 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white text-sm font-medium transition-colors disabled:opacity-50"
+                      className="flex-shrink-0 px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-900 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                       {isStarting ? '…' : never ? 'Start →' : 'Retry →'}
                     </button>

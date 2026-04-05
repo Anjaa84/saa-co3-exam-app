@@ -48,7 +48,7 @@ export default function ReviewScreen({ result, onBack }: Props) {
             <button
               onClick={() => setFilter('all')}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                filter === 'all' ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-300 hover:text-white'
+                filter === 'all' ? 'bg-orange-500 text-slate-900' : 'bg-slate-700 text-slate-300 hover:text-white'
               }`}
             >
               All ({wrongOnly.length})
@@ -58,7 +58,7 @@ export default function ReviewScreen({ result, onBack }: Props) {
                 key={t}
                 onClick={() => setFilter(t)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                  filter === t ? 'bg-orange-500 text-white' : 'bg-slate-700 text-slate-300 hover:text-white'
+                  filter === t ? 'bg-orange-500 text-slate-900' : 'bg-slate-700 text-slate-300 hover:text-white'
                 }`}
               >
                 {t} ({wrongOnly.filter(r => r.topic === t).length})

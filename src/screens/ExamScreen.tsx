@@ -237,7 +237,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
               >
                 <div className="flex items-start gap-3">
                   <span className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-colors ${
-                    isSelected ? 'bg-orange-500 border-orange-500 text-white' : 'border-slate-600 text-slate-400'
+                    isSelected ? 'bg-orange-500 border-orange-500 text-slate-900' : 'border-slate-600 text-slate-400'
                   }`}>
                     {opt.id}
                   </span>
@@ -278,7 +278,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
           ) : (
             <button
               onClick={() => setShowSubmitConfirm(true)}
-              className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white transition-colors text-sm font-semibold"
+              className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-900 transition-colors text-sm font-semibold"
             >
               Submit
             </button>
@@ -330,7 +330,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
                       isFlagged
                         ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/50'
                         : isAnswered
-                        ? 'bg-orange-500 text-white'
+                        ? 'bg-orange-500 text-slate-900'
                         : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
                     }`}
                   >
@@ -345,7 +345,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
               </span>
               <button
                 onClick={() => { setShowNav(false); setShowSubmitConfirm(true) }}
-                className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold transition-colors"
+                className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-900 text-sm font-semibold transition-colors"
               >
                 Submit Exam
               </button>
@@ -376,7 +376,7 @@ export default function ExamScreen({ questions, examSetId, setNumber, onFinish, 
             <button onClick={() => setShowSubmitConfirm(false)} className="flex-1 py-2.5 rounded-lg border border-slate-600 text-slate-300 hover:text-white text-sm transition-colors">
               Continue Exam
             </button>
-            <button onClick={handleSubmit} className="flex-1 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold text-sm transition-colors">
+            <button onClick={handleSubmit} className="flex-1 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-slate-900 font-semibold text-sm transition-colors">
               Submit
             </button>
           </div>
